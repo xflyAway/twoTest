@@ -1,0 +1,18 @@
+# 构建缓存与产物
+.buildozer/
+bin/
+__pycache__/
+*.pyc
+
+# 本机测试用的虚拟环境
+.venv/
+
+# IDE / 工具目录
+.trae/
+
+# 数据文件（手机上自动生成，无需上传）
+rent_data.json
+_test_data.json
+
+# 本地测试脚本
+_smoke_test.py

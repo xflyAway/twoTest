@@ -1,0 +1,56 @@
+# GitHub Actions 云端打包安卓 APK
+# 推送代码或手动触发后自动构建，产物在 Actions 页面 Artifacts 下载
+name: Build APK
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 安装 JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: 安装系统依赖
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y autoconf automake libtool pkg-config \
+            zip unzip gettext autopoint cmake libffi-dev libssl-dev
+
+      - name: 安装 Buildozer
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          # Cython 必须钉住 0.29.34，3.x 与 python-for-android 的 recipe 不兼容
+          python -m pip install buildozer "cython==0.29.34"
+
+      - name: 缓存构建依赖（加速二次构建）
+        uses: actions/cache@v4
+        with:
+          path: ~/.buildozer
+          key: buildozer-${{ runner.os }}-${{ hashFiles('buildozer.spec') }}
+          restore-keys: buildozer-${{ runner.os }}-
+
+      - name: 构建 APK（首次约 30-60 分钟）
+        run: buildozer -v android debug
+
+      - name: 上传 APK 产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: rent-apk
+          path: bin/*.apk
+          if-no-files-found: error
