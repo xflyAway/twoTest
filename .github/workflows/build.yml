@@ -38,6 +38,19 @@ jobs:
           # Cython 必须钉住 0.29.34，3.x 与 python-for-android 的 recipe 不兼容
           python -m pip install buildozer "cython==0.29.34"
 
+      # Ubuntu 24.04 自带 libtool 2.4.7 缺少 LT_SYS_SYMBOL_USCORE 宏，
+      # p4a 的 libffi 3.4.6 需要 libtool 2.5，否则 autoreconf 失败
+      - name: 升级 libtool 至 2.5
+        run: |
+          curl -sSL --retry 3 -o /tmp/libtool.tar.gz https://ftp.gnu.org/gnu/libtool/libtool-2.5.4.tar.gz
+          tar -xzf /tmp/libtool.tar.gz -C /tmp
+          cd /tmp/libtool-2.5.4
+          ./configure --prefix=/usr/local
+          make -j4
+          sudo make install
+          sudo ln -sf /usr/local/bin/libtoolize /usr/bin/libtoolize
+          libtoolize --version | head -1
+
       - name: 缓存构建依赖（加速二次构建）
         uses: actions/cache@v4
         with:
