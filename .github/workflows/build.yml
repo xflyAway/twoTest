@@ -29,27 +29,16 @@ jobs:
       - name: 安装系统依赖
         run: |
           sudo apt-get update
-          sudo apt-get install -y autoconf automake libtool pkg-config \
-            zip unzip gettext autopoint cmake libffi-dev libssl-dev
+          # libltdl-dev 提供 ltdl.m4（LT_SYS_SYMBOL_USCORE 宏），
+          # p4a 的 libffi recipe 跑 autoreconf 时必需
+          sudo apt-get install -y autoconf automake libtool libltdl-dev \
+            pkg-config zip unzip gettext autopoint cmake libffi-dev libssl-dev
 
       - name: 安装 Buildozer
         run: |
           python -m pip install --upgrade pip setuptools wheel
           # Cython 必须钉住 0.29.34，3.x 与 python-for-android 的 recipe 不兼容
           python -m pip install buildozer "cython==0.29.34"
-
-      # Ubuntu 24.04 自带 libtool 2.4.7 缺少 LT_SYS_SYMBOL_USCORE 宏，
-      # p4a 的 libffi 3.4.6 需要 libtool 2.5，否则 autoreconf 失败
-      - name: 升级 libtool 至 2.5
-        run: |
-          curl -sSL --retry 3 -o /tmp/libtool.tar.gz https://ftp.gnu.org/gnu/libtool/libtool-2.5.4.tar.gz
-          tar -xzf /tmp/libtool.tar.gz -C /tmp
-          cd /tmp/libtool-2.5.4
-          ./configure --prefix=/usr/local
-          make -j4
-          sudo make install
-          sudo ln -sf /usr/local/bin/libtoolize /usr/bin/libtoolize
-          libtoolize --version | head -1
 
       - name: 缓存构建依赖（加速二次构建）
         uses: actions/cache@v4
