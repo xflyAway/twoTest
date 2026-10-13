@@ -21,6 +21,11 @@ version = 1.0
 # 依赖（只内置控件，不需要第三方库）
 requirements = python3,kivy==2.3.0
 
+# 钉住 python-for-android 版本（buildozer 默认拉 master，其 python3 recipe 是
+# Python 3.14，kivy 2.3.0 预生成的 C 代码与之不兼容，编译报
+# _PyLong_AsByteArray 参数错误）。v2024.01.21 = Python 3.11.5 + kivy 2.3.0 recipe
+p4a.branch = v2024.01.21
+
 # 竖屏
 orientation = portrait
 fullscreen = 0
