@@ -144,6 +144,11 @@ class QueryScreen(Screen):
 class RentApp(App):
     title = '房屋收租管理'
 
+    def load_kv(self, filename=None):
+        # Kivy 会按 App 类名自动加载 rent.kv，与 build() 里的显式加载重复，
+        # 导致所有控件渲染两份（界面重影）。这里跳过自动加载，只加载一次。
+        return True
+
     def build(self):
         # 安卓上 cwd 不可写，必须用应用私有目录
         self.data_file = os.path.join(self.user_data_dir, 'rent_data.json')
